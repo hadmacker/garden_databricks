@@ -25,6 +25,7 @@
   * Added environment variable `GARDENDATA_STORAGEKEY` with Azure Storage Account Key. [This link](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/azure/azure-storage) has other methods to connect Azure Blob Storage.
 * [ ] Job to injest data into Databricks Bronze Layer
 * [ ] Job to injest data into Databricks Silver Layer
+* [ ] Job to injest data into Databricks Gold Layer
 * [ ] Event Hubs
 * [ ] Create Event Hub Listener to write images to Storage Account
 * [ ] Job to injest data into Databricks Gold Layer + trigger events
@@ -44,6 +45,7 @@
   * com.microsoft.azure:azure-eventhubs-spark_2.12:2.3.18
   * com.databricks:spark-xml_2.12:0.11.0
 * [Reading JSON files in Databricks](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/read-json)
+* [ls recursive databricks](https://stackoverflow.com/questions/63955823/list-the-files-of-a-directory-and-subdirectory-recursively-in-databricksdbfs)
 
 ## Databricks Documentation
 * [SQL Reference](https://spark.apache.org/docs/3.1.1/sql-ref.html)
@@ -60,6 +62,7 @@
 * [Microsoft: Table streaming reads and writes](https://docs.microsoft.com/en-us/azure/databricks/delta/delta-streaming)
 * [Microsoft: SQL reference for SQL Analytics](https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual)
 * [Microsoft: SQL Analytics Quickstart: Run and visualize a query](https://docs.microsoft.com/en-us/azure/databricks/sql/get-started/user-quickstart)
+* [How to connect databricks with Azure Blob Storage](https://caiomsouza.medium.com/how-to-connect-azure-databricks-with-azure-blob-storage-1b3307620524)
 
 ## Libraries
 
@@ -67,3 +70,7 @@
 
 * [Downloading Files, Amazon S3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html)
 
+## Questions
+
+* Q: Why are you using both AWS and Azure in this solution?
+  * A: I used to work with AWS. I now work with Azure. It's easier for me to get invoice credits in Azure than AWS currently so that's where I'm continuing the project.
