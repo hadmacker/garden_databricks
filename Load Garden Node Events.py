@@ -24,17 +24,39 @@ print(schemadf0505)
 
 import json
 from pyspark.sql.types import StructType
+from  pyspark.sql.functions import input_file_name
 
 schemaJson  = '{"fields":[{"metadata":{},"name":"event","nullable":true,"type":{"fields":[{"metadata":{},"name":"metadata","nullable":true,"type":{"fields":[{"metadata":{},"name":"reported","nullable":true,"type":{"fields":[{"metadata":{},"name":"hall","nullable":true,"type":{"fields":[{"metadata":{},"name":"timestamp","nullable":true,"type":"long"}],"type":"struct"}},{"metadata":{},"name":"humidity","nullable":true,"type":{"fields":[{"metadata":{},"name":"timestamp","nullable":true,"type":"long"}],"type":"struct"}},{"metadata":{},"name":"light","nullable":true,"type":{"fields":[{"metadata":{},"name":"timestamp","nullable":true,"type":"long"}],"type":"struct"}},{"metadata":{},"name":"message","nullable":true,"type":{"fields":[{"metadata":{},"name":"timestamp","nullable":true,"type":"long"}],"type":"struct"}},{"metadata":{},"name":"soil","nullable":true,"type":{"fields":[{"metadata":{},"name":"timestamp","nullable":true,"type":"long"}],"type":"struct"}},{"metadata":{},"name":"temp","nullable":true,"type":{"fields":[{"metadata":{},"name":"timestamp","nullable":true,"type":"long"}],"type":"struct"}}],"type":"struct"}}],"type":"struct"}},{"metadata":{},"name":"state","nullable":true,"type":{"fields":[{"metadata":{},"name":"reported","nullable":true,"type":{"fields":[{"metadata":{},"name":"hall","nullable":true,"type":"long"},{"metadata":{},"name":"humidity","nullable":true,"type":"long"},{"metadata":{},"name":"light","nullable":true,"type":"long"},{"metadata":{},"name":"message","nullable":true,"type":"string"},{"metadata":{},"name":"soil","nullable":true,"type":"long"},{"metadata":{},"name":"temp","nullable":true,"type":"long"}],"type":"struct"}}],"type":"struct"}},{"metadata":{},"name":"timestamp","nullable":true,"type":"long"},{"metadata":{},"name":"version","nullable":true,"type":"long"}],"type":"struct"}},{"metadata":{},"name":"message","nullable":true,"type":"string"},{"metadata":{},"name":"topic","nullable":true,"type":"string"}],"type":"struct"}'
 
 schema = StructType.fromJson(json.loads(schemaJson))
 
-df = spark.read.schema(schema).json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*/*/*/*")
-df.count()
+dfRaw = spark.read \
+  .schema(schema) \
+  .json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*/*/*/*") \
+  .withColumn("filename", input_file_name())
+
+dfRaw.count()
 
 # COMMAND ----------
 
-display(df)
+from pyspark.sql.functions import col, regexp_extract, unix_timestamp, split
+from pyspark.sql import types
+dfEvents = dfRaw \
+  .withColumn("thing", split(col("topic"), "/", -1).getItem(2)) \
+  .withColumn("timestamp", col("event.timestamp")) \
+  .withColumn("epoch", col("timestamp").cast(types.TimestampType())) \
+  .withColumn("humidity", col("event.state.reported.humidity")) \
+  .withColumn("soil", col("event.state.reported.soil")) \
+  .withColumn("light", col("event.state.reported.light")) \
+  .withColumn("temp", col("event.state.reported.temp")) \
+  .withColumn("version", col("event.version")) \
+  .drop(col("event")) \
+  .drop(col("topic")) \
+  .drop(col("message")) 
+
+# COMMAND ----------
+
+display(dfEvents)
 
 # COMMAND ----------
 
