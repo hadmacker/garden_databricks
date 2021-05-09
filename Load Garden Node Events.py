@@ -60,8 +60,76 @@ display(dfEvents)
 
 # COMMAND ----------
 
-dbutils.fs.help()
+# Prime Events Table with past data
+from pyspark.sql.functions import *
+
+print(dfEvents.count())
+
+spark.sql("DROP TABLE IF EXISTS events")
+
+dfEvents.write \
+  .format("delta") \
+  .saveAsTable("events")
 
 # COMMAND ----------
 
+from pyspark.sql.functions import *
 
+dfEventsStream = spark.readStream \
+  .schema(schema) \
+  .json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*/*/*/*") \
+  .withColumn("filename", input_file_name()) \
+  .withColumn("thing", split(col("topic"), "/", -1).getItem(2)) \
+  .withColumn("timestamp", col("event.timestamp")) \
+  .withColumn("epoch", col("timestamp").cast(types.TimestampType())) \
+  .withColumn("humidity", col("event.state.reported.humidity")) \
+  .withColumn("soil", col("event.state.reported.soil")) \
+  .withColumn("light", col("event.state.reported.light")) \
+  .withColumn("temp", col("event.state.reported.temp")) \
+  .withColumn("version", col("event.version")) \
+  .drop(col("event")) \
+  .drop(col("topic")) \
+  .drop(col("message")) 
+
+eventsCheckpoint = "wasbs://checkpoints@gardendatabricksstorage.blob.core.windows.net/events"
+
+dfEventsStream.writeStream \
+  .format("delta") \
+  .outputMode("append") \
+  .trigger(processingTime='5 Seconds') \
+  .option("checkpointLocation", eventsCheckpoint) \
+  .table("events")
+
+# COMMAND ----------
+
+from pyspark.sql.types import DateType
+from pyspark.sql.functions import col
+
+dfEventReports = spark.sql("select * from events") \
+  .withColumn("datePart", date_format("epoch", "yyyy-MM-dd")) \
+  .withColumn("year", date_format("epoch", "yyyy")) \
+  .withColumn("month", date_format("epoch", "MM")) \
+  .withColumn("day", date_format("epoch", "dd")) \
+  .withColumn("hour", date_format("epoch", "HH")) \
+  .groupBy("year", "month", "day", "hour") \
+  .agg(max("temp"), max("humidity"), max("light")) \
+  .sort("year", "month", "day", "hour")
+
+# COMMAND ----------
+
+#light
+display(dfEventReports)
+
+# COMMAND ----------
+
+#Humidity
+display(dfEventReports)
+
+# COMMAND ----------
+
+#Temperature
+display(dfEventReports)
+
+# COMMAND ----------
+
+dbutils.fs.help()
