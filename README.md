@@ -57,12 +57,15 @@
     * Data Types: https://spark.apache.org/docs/3.0.1/sql-ref-datatypes.html
     * DateTime Patterns: https://spark.apache.org/docs/3.0.1/sql-ref-datetime-pattern.html 
 * [Apache Spark 3.1.1 Documentation:](https://spark.apache.org/docs/3.1.1/)
+  * [Structured Streaming Programming Guide](http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
+    * writeStream ^^
 * [Databricks Delta Engine guide](https://docs.databricks.com/delta/)
 * [Azure Databricks Documentation](https://docs.microsoft.com/en-us/azure/databricks/)
 * [Microsoft: Table streaming reads and writes](https://docs.microsoft.com/en-us/azure/databricks/delta/delta-streaming)
 * [Microsoft: SQL reference for SQL Analytics](https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual)
 * [Microsoft: SQL Analytics Quickstart: Run and visualize a query](https://docs.microsoft.com/en-us/azure/databricks/sql/get-started/user-quickstart)
 * [How to connect databricks with Azure Blob Storage](https://caiomsouza.medium.com/how-to-connect-azure-databricks-with-azure-blob-storage-1b3307620524)
+* [SO: Unable to infer schema](https://stackoverflow.com/questions/56339089/pyspark-create-schema-from-json-schema-involving-array-columns)
 
 ## Libraries
 
