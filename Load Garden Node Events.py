@@ -11,8 +11,8 @@ dbutils.fs.ls("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net
 
 # fails with "Unable to infer schema for JSON. It must be specified manually".
 # That's ok, move to the next section. But also see this SO link: https://stackoverflow.com/questions/56339089/pyspark-create-schema-from-json-schema-involving-array-columns
-df = spark.read.json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*")
-df.count()
+#df = spark.read.json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*")
+#df.count()
 
 # COMMAND ----------
 
@@ -61,15 +61,10 @@ display(dfEvents)
 # COMMAND ----------
 
 # Prime Events Table with past data
-from pyspark.sql.functions import *
-
-print(dfEvents.count())
-
-spark.sql("DROP TABLE IF EXISTS events")
-
-dfEvents.write \
-  .format("delta") \
-  .saveAsTable("events")
+#from pyspark.sql.functions import *
+#print(dfEvents.count())
+#spark.sql("DROP TABLE IF EXISTS events")
+#dfEvents.write.format("delta").saveAsTable("events")
 
 # COMMAND ----------
 
@@ -102,32 +97,7 @@ dfEventsStream.writeStream \
 
 # COMMAND ----------
 
-from pyspark.sql.types import DateType
-from pyspark.sql.functions import col
-
-dfEventReports = spark.sql("select * from events") \
-  .withColumn("datePart", date_format("epoch", "yyyy-MM-dd")) \
-  .withColumn("year", date_format("epoch", "yyyy")) \
-  .withColumn("month", date_format("epoch", "MM")) \
-  .withColumn("day", date_format("epoch", "dd")) \
-  .withColumn("hour", date_format("epoch", "HH")) \
-  .groupBy("year", "month", "day", "hour") \
-  .agg(max("temp"), max("humidity"), max("light")) \
-  .sort("year", "month", "day", "hour")
-
-# COMMAND ----------
-
-#light
-display(dfEventReports)
-
-# COMMAND ----------
-
-#Humidity
-display(dfEventReports)
-
-# COMMAND ----------
-
-#Temperature
+dfEventReports = spark.sql("select * from events")
 display(dfEventReports)
 
 # COMMAND ----------
