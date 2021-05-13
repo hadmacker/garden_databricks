@@ -14,8 +14,6 @@
     * AWS CLI command from .\data folder: `aws s3 sync s3://garden-nodes .`
 * [Azure Storage Explorer](https://azure.microsoft.com/en-ca/features/storage-explorer/)
   * Amazing tool, easily upload nested folders of `.\data` for example.
-* Cluster Setup
-  * 
 
 ## TODO
 
@@ -25,16 +23,15 @@
 * [x] Create Databricks cluster (DS3 v2) [Cluster Pricing](https://azure.microsoft.com/en-ca/pricing/details/databricks/)
 * [x] Connect Databricks instance to Azure Storage Account [](https://caiomsouza.medium.com/how-to-connect-azure-databricks-with-azure-blob-storage-1b3307620524)
   * Added environment variable `GARDENDATA_STORAGEKEY` with Azure Storage Account Key. [This link](https://docs.microsoft.com/en-us/azure/databricks/data/data-sources/azure/azure-storage) has other methods to connect Azure Blob Storage.
-* [ ] Job to injest data into Databricks Bronze Layer
-* [ ] Job to injest data into Databricks Silver Layer
-* [ ] Job to injest data into Databricks Gold Layer
+* [x] Job to injest data into Databricks Bronze Layer
+* [x] Job to injest data into Databricks Silver Layer
+* [x] Job to injest data into Databricks Gold Layer
+* [ ] Secrets management (using `dbutils.secrets`, not `os.environ`)
 * [ ] Event Hubs
 * [ ] Script to enable/disable Azure Resources
 * [ ] Create Event Hub Listener to write images to Storage Account
 * [ ] Job to injest data into Databricks Gold Layer + trigger events
-* [ ] Add more data into Databricks
 * [ ] Add copy job from S3 to Azure
-* [ ] Secrets management (using `dbutils.secrets`, not `os.environ`)
 
 ## Databricks Notes
 
@@ -57,6 +54,11 @@
   * Bronze: Raw Injestion
   * Silver: Filtered, cleaned, augmented
   * Gold: Business-level aggregates & reporting
+* Secrets Management
+  * Blog: [Visualize data with Azure Databricks](https://medium.com/analytics-vidhya/visualize-data-in-azure-databricks-d9f087be093d)
+    * Looks like a good E2E Databricks walkthrough, includes proper secrets management. Have not yet tried this.
+  * [Mount a Blob container](https://docs.databricks.com/data/data-sources/azure/azure-storage.html#azure-blob-storage-notebook)
+    * Top command includes reference to secrets for key.
 
 ## Databricks Documentation
 * [SQL Reference](https://spark.apache.org/docs/3.1.1/sql-ref.html)
@@ -71,6 +73,7 @@
 * [Apache Spark 3.1.1 Documentation:](https://spark.apache.org/docs/3.1.1/)
   * [Structured Streaming Programming Guide](http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
     * writeStream ^^
+    * [Structured Streaming to Event Hubs with PySpark](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md)
 * [Databricks Delta Engine guide](https://docs.databricks.com/delta/)
 * [Azure Databricks Documentation](https://docs.microsoft.com/en-us/azure/databricks/)
 * [Microsoft: Table streaming reads and writes](https://docs.microsoft.com/en-us/azure/databricks/delta/delta-streaming)
@@ -79,6 +82,9 @@
 * [Azure Databricks Pricing](https://azure.microsoft.com/en-ca/pricing/details/databricks/)
   * DS3 v2 4 vCPU 14 GiB RAM 0.75 DBU $0.743/hour CAD
 * [Databricks Visualizations](https://docs.databricks.com/notebooks/visualizations/index.html)
+* Secrets Management
+  * [Azure Key Vault-backed scopes](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#azure-key-vault-backed-scopes)
+
 
 ## Libraries
 
@@ -89,6 +95,7 @@
 ### com.microsoft.azure:azure-eventhubs-spark
 
 * [Azure Event Hubs](https://docs.microsoft.com/en-us/azure/databricks/spark/latest/structured-streaming/streaming-event-hubs)
+  * [github guide](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md)
 * [Maven Repository](https://mvnrepository.com/artifact/com.microsoft.azure/azure-eventhubs-spark)
 
 ## Questions
