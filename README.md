@@ -26,12 +26,45 @@
 * [x] Job to injest data into Databricks Bronze Layer
 * [x] Job to injest data into Databricks Silver Layer
 * [x] Job to injest data into Databricks Gold Layer
-* [ ] Secrets management (using `dbutils.secrets`, not `os.environ`)
-* [ ] Event Hubs
-* [ ] Script to enable/disable Azure Resources
-* [ ] Create Event Hub Listener to write images to Storage Account
-* [ ] Job to injest data into Databricks Gold Layer + trigger events
-* [ ] Add copy job from S3 to Azure
+* [x] Secrets management (using `dbutils.secrets`, not `os.environ`)
+* [ ] Join streams with Govt. of Canada Weather/precipitation data
+  * Data: [GOC, Daily Data Report for May 2021](https://climate.weather.gc.ca/climate_data/daily_data_e.html?StationID=27174)
+
+## Databricks Documentation
+* [SQL Reference](https://spark.apache.org/docs/3.1.1/sql-ref.html)
+* Python API (PySpark)
+  * Main module: `pyspark.sql.functions`
+    * blanket import (not recommended): `from pyspark.sql.functions import *`
+  * [PySpark (Latest)](https://spark.apache.org/docs/3.1.1/api/python/reference/index.html)
+  * [PySpark (3.1.1)](https://spark.apache.org/docs/3.1.1/api/python/reference/pyspark.sql.html)
+  * [PySpark (3.0.1)](https://spark.apache.org/docs/3.0.1/api/python/pyspark.sql.html#module-pyspark.sql)
+    * [Data Types](https://spark.apache.org/docs/3.0.1/sql-ref-datatypes.html)
+      * module: `pyspark.sql.types`
+    * [DateTime Patterns](https://spark.apache.org/docs/3.0.1/sql-ref-datetime-pattern.html)
+* [Apache Spark 3.1.1 Documentation:](https://spark.apache.org/docs/3.1.1/)
+  * [Structured Streaming Programming Guide](http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
+    * writeStream ^^
+    * [Structured Streaming to Event Hubs with PySpark](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md)
+* [Databricks Delta Engine guide](https://docs.databricks.com/delta/)
+* [Azure Databricks Documentation](https://docs.microsoft.com/en-us/azure/databricks/)
+* [Microsoft: Table streaming reads and writes](https://docs.microsoft.com/en-us/azure/databricks/delta/delta-streaming)
+* [Microsoft: SQL reference for SQL Analytics](https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual)
+* [Microsoft: SQL Analytics Quickstart: Run and visualize a query](https://docs.microsoft.com/en-us/azure/databricks/sql/get-started/user-quickstart)
+* [Azure Databricks Pricing](https://azure.microsoft.com/en-ca/pricing/details/databricks/)
+  * DS3 v2 4 vCPU 14 GiB RAM 0.75 DBU $0.743/hour CAD
+* [Databricks Visualizations](https://docs.databricks.com/notebooks/visualizations/index.html)
+* Secrets Management
+  1. [Secret Scopes](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#azure-key-vault-backed-scopes)
+    * 1.1: Create Azure Key Vault
+    * 1.2: Get Key Vault DNS URL + ResourceID path
+    * 1.3: Come up with a name for your Secrets Scope. Remember this, write it down somewhere. (Looking this up later is not fun.)
+    * 1.4: Add 1.2 items here: `https://<databricks-instance>#secrets/createScope`
+  2. [Secrets](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secrets)
+    * 2.1: Create secret in Azure Key Vault
+  3. [Secrets utilities](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/databricks-utils#dbutils-secrets)
+    * Syntax: `dbutils.secrets.get("secretscopename", "secretname")`
+  4. [Databricks CLI](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/cli/)
+    * Did you skip step 1.3? Yeah... now you'll need the link above. ^^
 
 ## Databricks Notes
 
@@ -59,32 +92,6 @@
     * Looks like a good E2E Databricks walkthrough, includes proper secrets management. Have not yet tried this.
   * [Mount a Blob container](https://docs.databricks.com/data/data-sources/azure/azure-storage.html#azure-blob-storage-notebook)
     * Top command includes reference to secrets for key.
-
-## Databricks Documentation
-* [SQL Reference](https://spark.apache.org/docs/3.1.1/sql-ref.html)
-* Python API (PySpark)
-  * When in doubt, just add `from pyspark.sql.functions import *` to the top of every command.
-    * Just kidding, but seriously...
-  * [PySpark (Latest)](https://spark.apache.org/docs/3.1.1/api/python/reference/index.html)
-  * [PySpark (3.1.1)](https://spark.apache.org/docs/3.1.1/api/python/reference/pyspark.sql.html)
-  * [PySpark (3.0.1)](https://spark.apache.org/docs/3.0.1/api/python/pyspark.sql.html#module-pyspark.sql)
-    * Data Types: https://spark.apache.org/docs/3.0.1/sql-ref-datatypes.html
-    * DateTime Patterns: https://spark.apache.org/docs/3.0.1/sql-ref-datetime-pattern.html 
-* [Apache Spark 3.1.1 Documentation:](https://spark.apache.org/docs/3.1.1/)
-  * [Structured Streaming Programming Guide](http://spark.apache.org/docs/latest/structured-streaming-programming-guide.html)
-    * writeStream ^^
-    * [Structured Streaming to Event Hubs with PySpark](https://github.com/Azure/azure-event-hubs-spark/blob/master/docs/PySpark/structured-streaming-pyspark.md)
-* [Databricks Delta Engine guide](https://docs.databricks.com/delta/)
-* [Azure Databricks Documentation](https://docs.microsoft.com/en-us/azure/databricks/)
-* [Microsoft: Table streaming reads and writes](https://docs.microsoft.com/en-us/azure/databricks/delta/delta-streaming)
-* [Microsoft: SQL reference for SQL Analytics](https://docs.microsoft.com/en-us/azure/databricks/sql/language-manual)
-* [Microsoft: SQL Analytics Quickstart: Run and visualize a query](https://docs.microsoft.com/en-us/azure/databricks/sql/get-started/user-quickstart)
-* [Azure Databricks Pricing](https://azure.microsoft.com/en-ca/pricing/details/databricks/)
-  * DS3 v2 4 vCPU 14 GiB RAM 0.75 DBU $0.743/hour CAD
-* [Databricks Visualizations](https://docs.databricks.com/notebooks/visualizations/index.html)
-* Secrets Management
-  * [Azure Key Vault-backed scopes](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#azure-key-vault-backed-scopes)
-
 
 ## Libraries
 
