@@ -55,16 +55,16 @@
 * [Databricks Visualizations](https://docs.databricks.com/notebooks/visualizations/index.html)
 * Secrets Management
   1. [Secret Scopes](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secret-scopes#azure-key-vault-backed-scopes)
-    * 1.1: Create Azure Key Vault
-    * 1.2: Get Key Vault DNS URL + ResourceID path
-    * 1.3: Come up with a name for your Secrets Scope. Remember this, write it down somewhere. (Looking this up later is not fun.)
-    * 1.4: Add 1.2 items here: `https://<databricks-instance>#secrets/createScope`
+    1.1. Create Azure Key Vault
+    1.2. Get Key Vault DNS URL + ResourceID path
+    1.3. Come up with a name for your Secrets Scope. Remember this, write it down somewhere. (Looking this up later is not fun.)
+    1.4. Add 1.2 items here: `https://<databricks-instance>#secrets/createScope`
   2. [Secrets](https://docs.microsoft.com/en-us/azure/databricks/security/secrets/secrets)
-    * 2.1: Create secret in Azure Key Vault
+    2.1. Create secret in Azure Key Vault
   3. [Secrets utilities](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/databricks-utils#dbutils-secrets)
-    * Syntax: `dbutils.secrets.get("secretscopename", "secretname")`
+    3.1. Syntax: `dbutils.secrets.get("secretscopename", "secretname")`
   4. [Databricks CLI](https://docs.microsoft.com/en-us/azure/databricks/dev-tools/cli/)
-    * Did you skip step 1.3? Yeah... now you'll need the link above. ^^
+    4.1. Did you skip step 1.3? Yeah... now you'll need the link above. ^^
 
 ## Databricks Notes
 
