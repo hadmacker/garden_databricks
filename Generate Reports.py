@@ -3,10 +3,12 @@
 # light
 # humidity
 # temperature
+import os
+spark.conf.set("fs.azure.account.key.gardendatabricksstorage.blob.core.windows.net", dbutils.secrets.get("gardendatabricksecrets", "gardendatabricksstorage-accesskey"))
 
 # COMMAND ----------
 
-import datetime
+from datetime import date
 
 today = date.today()
 year = today.year
@@ -88,23 +90,14 @@ display(df)
 # COMMAND ----------
 
 from pyspark.sql.types import DateType,StructType
-from pyspark.sql.functions import col, date_format, avg, min, max,input_file_name
+from pyspark.sql.functions import col, date_format, avg, min, max,input_file_name, count
 
 dfEventReports = spark.sql("select * from events") \
-  .withColumn("datePart", date_format("epoch", "yyyy-MM-dd")) \
-  .withColumn("year", date_format("epoch", "yyyy")) \
-  .withColumn("month", date_format("epoch", "MM")) \
-  .withColumn("day", date_format("epoch", "dd")) \
-  .withColumn("hour", date_format("epoch", "HH")) \
   .groupBy("thing", "year", "month", "day", "hour") \
-  .agg(min("temp"), max("temp"), avg("temp"), avg("humidity"), avg("light")) \
+  .agg(min("temp"), max("temp"), avg("temp"), avg("humidity"), avg("light"), count("temp")) \
   .sort("year", "month", "day", "hour")
 
 display(dfEventReports)
-
-# COMMAND ----------
-
-
 
 # COMMAND ----------
 

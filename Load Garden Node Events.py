@@ -1,7 +1,20 @@
 # Databricks notebook source
+# MAGIC %md
+# MAGIC This notebook roughly follows the content here:
+# MAGIC https://docs.databricks.com/delta/optimizations/optimization-examples.html#delta-lake-on-databricks-optimizations-python-notebook
+
+# COMMAND ----------
+
 import os
 
-spark.conf.set("fs.azure.account.key.gardendatabricksstorage.blob.core.windows.net", os.environ['GARDENDATA_STORAGEKEY'])
+spark.conf.set("fs.azure.account.key.gardendatabricksstorage.blob.core.windows.net", dbutils.secrets.get("gardendatabricksecrets", "gardendatabricksstorage-accesskey"))
+
+#mount seems irrelevant for the following notebook. 
+# dbutils.fs.unmount("/mnt/iotdata")
+#dbutils.fs.mount(
+#  source = "wasbs://reports@gardendatabricksstorage.blob.core.windows.net/data",
+#  mount_point = "/mnt/iotdata",
+#  extra_configs = {"fs.azure.account.key.gardendatabricksstorage.blob.core.windows.net":dbutils.secrets.get("gardendatabricksecrets", "gardendatabricksstorage-accesskey")})
 
 # COMMAND ----------
 
@@ -30,6 +43,7 @@ schemaJson  = '{"fields":[{"metadata":{},"name":"event","nullable":true,"type":{
 
 schema = StructType.fromJson(json.loads(schemaJson))
 
+# https://docs.databricks.com/delta/optimizations/optimization-examples.html#delta-lake-on-databricks-optimizations-python-notebook
 dfRaw = spark.read \
   .schema(schema) \
   .json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*/*/*/*") \
@@ -39,7 +53,7 @@ dfRaw.count()
 
 # COMMAND ----------
 
-from pyspark.sql.functions import col, regexp_extract, unix_timestamp, split
+from pyspark.sql.functions import col, regexp_extract, unix_timestamp, split, date_format
 from pyspark.sql import types
 dfEvents = dfRaw \
   .withColumn("thing", split(col("topic"), "/", -1).getItem(2)) \
@@ -50,6 +64,11 @@ dfEvents = dfRaw \
   .withColumn("light", col("event.state.reported.light")) \
   .withColumn("temp", col("event.state.reported.temp")) \
   .withColumn("version", col("event.version")) \
+  .withColumn("datePart", date_format("epoch", "yyyy-MM-dd")) \
+  .withColumn("year", date_format("epoch", "yyyy")) \
+  .withColumn("month", date_format("epoch", "MM")) \
+  .withColumn("day", date_format("epoch", "dd")) \
+  .withColumn("hour", date_format("epoch", "HH")) \
   .drop(col("event")) \
   .drop(col("topic")) \
   .drop(col("message")) 
@@ -60,40 +79,58 @@ display(dfEvents)
 
 # COMMAND ----------
 
-# Prime Events Table with past data
-#from pyspark.sql.functions import *
-#print(dfEvents.count())
-#spark.sql("DROP TABLE IF EXISTS events")
-#dfEvents.write.format("delta").saveAsTable("events")
+#path = f"/mnt/iotdata/events_parquet"
+path = f"wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/parquet/events_parquet"
+dfEvents \
+  .write \
+  .format("parquet") \
+  .mode("append") \
+  .partitionBy("datePart") \
+  .save(path)
+
+# COMMAND ----------
+
+# load Parquet
+
+from pyspark.sql.functions import *
+
+dfEventsStream = spark.read \
+  .format("parquet") \
+  .load("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/parquet/events_parquet")
+
+# COMMAND ----------
+
+display(dfEventsStream)
+
+# COMMAND ----------
+
+dfEventsStream \
+  .write \
+  .format("delta") \
+  .mode("overwrite") \
+  .partitionBy("datePart") \
+  .save("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/delta/events_delta")
+
+
+# COMMAND ----------
+
+dfeventsdelta = spark.read.format("delta").load("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/delta/events_delta")
+display(dfeventsdelta)
+
+# COMMAND ----------
+
+display(spark.sql("DROP TABLE IF EXISTS events"))
+display(spark.sql("CREATE TABLE events USING DELTA LOCATION 'wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/delta/events_delta'"))
+display(spark.sql("OPTIMIZE events ZORDER BY (epoch)"))
 
 # COMMAND ----------
 
 from pyspark.sql.functions import *
 
-dfEventsStream = spark.readStream \
-  .schema(schema) \
-  .json("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/data/*/*/*/*") \
-  .withColumn("filename", input_file_name()) \
-  .withColumn("thing", split(col("topic"), "/", -1).getItem(2)) \
-  .withColumn("timestamp", col("event.timestamp")) \
-  .withColumn("epoch", col("timestamp").cast(types.TimestampType())) \
-  .withColumn("humidity", col("event.state.reported.humidity")) \
-  .withColumn("soil", col("event.state.reported.soil")) \
-  .withColumn("light", col("event.state.reported.light")) \
-  .withColumn("temp", col("event.state.reported.temp")) \
-  .withColumn("version", col("event.version")) \
-  .drop(col("event")) \
-  .drop(col("topic")) \
-  .drop(col("message")) 
-
-eventsCheckpoint = "wasbs://checkpoints@gardendatabricksstorage.blob.core.windows.net/events"
-
-dfEventsStream.writeStream \
+dfEventsStream = spark.read \
   .format("delta") \
-  .outputMode("append") \
-  .trigger(processingTime='5 Seconds') \
-  .option("checkpointLocation", eventsCheckpoint) \
-  .table("events")
+  .load("wasbs://gardennodes@gardendatabricksstorage.blob.core.windows.net/delta/events_delta")
+display(dfEventsStream)
 
 # COMMAND ----------
 
@@ -102,4 +139,4 @@ display(dfEventReports)
 
 # COMMAND ----------
 
-dbutils.fs.help()
+#dbutils.fs.unmount("/mnt/iotdata")

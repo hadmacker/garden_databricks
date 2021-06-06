@@ -1,28 +1,12 @@
 # Databricks notebook source
 import os
 
-spark.conf.set("fs.azure.account.key.gardendatabricksstorage.blob.core.windows.net", os.environ['GARDENDATA_STORAGEKEY'])
+spark.conf.set("fs.azure.account.key.gardendatabricksstorage.blob.core.windows.net", dbutils.secrets.get("gardendatabricksecrets", "gardendatabricksstorage-accesskey"))
 
 # COMMAND ----------
 
 dfe = spark.sql("select * from events")
 display(dfe)
-
-# COMMAND ----------
-
-from pyspark.sql.types import DateType,StructType
-from pyspark.sql.functions import col, date_format, avg, min, max,input_file_name
-
-dfEventReports = spark.sql("select * from events") \
-  .withColumn("datePart", date_format("epoch", "yyyy-MM-dd")) \
-  .withColumn("year", date_format("epoch", "yyyy")) \
-  .withColumn("month", date_format("epoch", "MM")) \
-  .withColumn("day", date_format("epoch", "dd")) \
-  .withColumn("hour", date_format("epoch", "HH"))
-
-# COMMAND ----------
-
-display(dfEventReports)
 
 # COMMAND ----------
 
@@ -33,6 +17,7 @@ dfHumidity = dfEventReports \
   .drop(col("temp"))
 
 dfHumidity.write.mode("overwrite").saveAsTable("humidity")
+display(spark.sql("OPTIMIZE humidity ZORDER BY (epoch)"))
 
 # COMMAND ----------
 
@@ -48,6 +33,7 @@ dfTemperatures = dfEventReports \
   .drop(col("humidity"))
 
 dfTemperatures.write.mode("overwrite").saveAsTable("temperature")
+display(spark.sql("OPTIMIZE temperature ZORDER BY (epoch)"))
 
 # COMMAND ----------
 
@@ -58,6 +44,7 @@ dfLight = dfEventReports \
   .drop(col("temp"))
 
 dfLight.write.mode("overwrite").saveAsTable("light")
+display(spark.sql("OPTIMIZE light ZORDER BY (epoch)"))
 
 # COMMAND ----------
 
